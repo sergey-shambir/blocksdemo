@@ -36,6 +36,7 @@ public:
 
 private:
     std::vector<std::string> getSearchPaths();
+    std::string getAppDirectoryLinux();
 };
 
 #endif // BLOCKSAPPLICATION_H

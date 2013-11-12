@@ -23,6 +23,10 @@ THE SOFTWARE.
 #include "BlocksApplication.h"
 #include "LoadingScene.h"
 
+#if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+#include <unistd.h>
+#endif
+
 using namespace cocos2d;
 
 BlocksApplication::BlocksApplication()
@@ -56,6 +60,10 @@ void BlocksApplication::applicationWillEnterForeground()
 
 std::vector<std::string> BlocksApplication::getSearchPaths()
 {
+    std::string prefix;
+    if (getTargetPlatform() == kTargetLinux)
+        prefix = getAppDirectoryLinux() + "../data/";
+
     const int dpi = CCDevice::getDPI();
     std::string dpiPath = "ldpi";
     if (dpi > 280) {
@@ -66,16 +74,32 @@ std::vector<std::string> BlocksApplication::getSearchPaths()
         dpiPath = "mdpi";
     }
     std::vector<std::string> result;
-    result.push_back(dpiPath);
-    result.push_back("nodpi");
+    result.push_back(prefix + dpiPath);
+    result.push_back(prefix + "nodpi");
 
     switch (getCurrentLanguage()) {
     case kLanguageRussian:
-        result.push_back("ru");
+        result.push_back(prefix + "ru");
     default:
         break;
     }
-    result.push_back("en");
+    result.push_back(prefix + "en");
 
     return result;
+}
+
+std::string BlocksApplication::getAppDirectoryLinux()
+{
+#if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+    char fullpath[256] = {0};
+    ssize_t length = readlink("/proc/self/exe", fullpath, sizeof(fullpath)-1);
+    if (length <= 0) {
+        return std::string();
+    }
+    fullpath[length] = '\0';
+    std::string appPath = fullpath;
+    return appPath.substr(0, appPath.find_last_of("/")) + "/";
+#else
+    return std::string();
+#endif
 }

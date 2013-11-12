@@ -33,6 +33,11 @@ public:
 private:
     LoadingScene();
     bool init();
+    void update(float dt);
+    bool loadNextResource();
+    void loadNextScene();
+
+    std::vector<std::string> m_imagesToLoad;
 };
 
 #endif // LOADINGSCENE_H

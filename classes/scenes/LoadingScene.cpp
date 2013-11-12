@@ -21,6 +21,7 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "LoadingScene.h"
+#include "GameScene.h"
 
 using namespace cocos2d;
 
@@ -42,15 +43,20 @@ CCScene *LoadingScene::scene()
 
 LoadingScene::LoadingScene()
 {
+    m_imagesToLoad = {
+        "block-blue.png",
+        "block-green.png",
+        "block-red.png"
+    };
 }
 
 bool LoadingScene::init()
 {
+    CCLayer::init();
     const CCSize size = CCDirector::sharedDirector()->getWinSize();
 
     CCLayerColor *background = CCLayerColor::create(ccc4(200, 200, 200, 255));
     background->setContentSize(size);
-    background->setPosition(CCPoint(size.width * 0.5, size.height * 0.5));
     addChild(background, -1);
 
     CCLabelTTF *labelLoading = CCLabelTTF::create("Loading...", "Arial", 20);
@@ -58,5 +64,32 @@ bool LoadingScene::init()
     addChild(labelLoading, 1);
     labelLoading->setColor(ccBLACK);
 
+    scheduleUpdate();
+
     return true;
+}
+
+void LoadingScene::update(float dt)
+{
+    CCLayer::update(dt);
+    if (!loadNextResource()) {
+        unscheduleUpdate();
+        loadNextScene();
+    }
+}
+
+bool LoadingScene::loadNextResource()
+{
+    if (!m_imagesToLoad.empty()) {
+        const std::string image = m_imagesToLoad.back();
+        m_imagesToLoad.pop_back();
+        CCTextureCache::sharedTextureCache()->addImage(image.c_str());
+        return true;
+    }
+    return false;
+}
+
+void LoadingScene::loadNextScene()
+{
+    CCDirector::sharedDirector()->pushScene(GameScene::scene());
 }

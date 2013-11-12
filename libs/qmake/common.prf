@@ -5,15 +5,12 @@ contains(QMAKE_HOST.arch, x86_64):CC_ARCH_SUFFIX = 64-bit
 CC_OS_TYPE = linux
 
 CONFIG += c++11
+CONFIG -= qt
 
 DEFINES += LINUX ENABLE_MPG123
 
-INCLUDEPATH += /usr/include/freetype2/
-exists(/usr/local/include/GLFW/) {
-    INCLUDEPATH += /usr/local/include/GLFW/
-} else {
-    INCLUDEPATH += /usr/include/GLFW/
-}
+INCLUDEPATH += /usr/include/freetype2 /usr/include/GLFW
+
 INCLUDEPATH += \
     $${CC_ROOT} \
     $${CC_ROOT}/cocos2dx \
@@ -40,13 +37,6 @@ CONFIG(debug, debug|release) {
 }
 
 CC_LIB_LOCATION = $${CC_ROOT}/lib/$${CC_OS_TYPE}/$${CC_BUILD_TYPE}
-
-cocos2d_native_api {
-    CONFIG -= qt
-    INCLUDEPATH += \
-        $${CC_ROOT}/cocos/2d/platform/$${CC_OS_TYPE} \
-        $$cc_include_library(glfw3)
-}
 
 DEFINES += CC_ENABLE_CHIPMUNK_INTEGRATION
 

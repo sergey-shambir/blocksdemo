@@ -12,10 +12,12 @@ INCLUDEPATH += \
 
 SOURCES += main.cpp \
     ../classes/singletones/BlocksApplication.cpp \
-    ../classes/scenes/LoadingScene.cpp
+    ../classes/scenes/LoadingScene.cpp \
+    ../classes/scenes/GameScene.cpp
 
 HEADERS += \
     ../classes/singletones/BlocksApplication.h \
     ../include/cocos2d_game.h \
-    ../classes/scenes/LoadingScene.h
+    ../classes/scenes/LoadingScene.h \
+    ../classes/scenes/GameScene.h
 

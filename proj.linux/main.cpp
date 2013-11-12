@@ -6,9 +6,11 @@ using namespace cocos2d;
 
 int main()
 {
-    CCEGLView *view = new CCEGLView();
-    view->setFrameSize(1000, 800);
-
+    // create the application instance
     BlocksApplication app;
-    return app.run();
+
+    CCEGLView* eglView = CCEGLView::sharedOpenGLView();
+    eglView->setFrameSize(640, 800);
+
+    return CCApplication::sharedApplication()->run();
 }
