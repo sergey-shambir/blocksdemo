@@ -25,7 +25,8 @@ CC_EXTERNAL_LIBS += \
     -ljpeg -ltiff -lpng \
     -lfontconfig -lfreetype -lcurl \
     -lGLEW -lX11 -lfontconfig -lpthread -lGL -lglfw \
-    -lmpg123 -logg -lvorbis -lvorbisfile -lopenal -lalut -lwebp
+    -lmpg123 -logg -lvorbis -lvorbisfile -lopenal -lalut -lwebp \
+    -lwebsockets
 
 DEFINES += CC_USE_ARRAY_VECTOR=1
 CONFIG(debug, debug|release) {
