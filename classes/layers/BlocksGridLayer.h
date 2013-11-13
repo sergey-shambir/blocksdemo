@@ -3,11 +3,14 @@
 
 #include "cocos2d_game.h"
 #include "../model/Block.h"
+#include <functional>
 
 class BlocksGridLayer : public cocos2d::CCLayerColor, public cocos2d::TouchComponent
 {
 public:
     static BlocksGridLayer *create(float maxWidth, float maxHeight);
+
+    void onBlocksDestroyed(const std::function<void(int amount)> &fn);
 
 protected:
     typedef std::pair<int, int> BlockIndex;
@@ -32,14 +35,23 @@ protected:
 
     cocos2d::CCSprite *getSprite(const BlockIndex &i);
     cocos2d::CCSprite *createSprite(int x, int y);
+    cocos2d::CCSprite *createSpawnedSprite(int x);
+
+    void spawnNextBlock(float dt);
+    void shiftSpawnedBlocks();
+    void onGameOver();
 
 private:
+    std::vector<std::function<void(int amount)>> m_onBlocksDestroyed;
     float m_blockSize;
     int m_width;
     int m_height;
     std::vector<Block> m_blocks;
+    std::vector<Block> m_spawnedBlocks;
     std::vector<cocos2d::CCSprite *> m_sprites;
+    std::vector<cocos2d::CCSprite *> m_spawnedSprites;
     cocos2d::CCRect m_touchArea;
+    bool m_isGameOver;
 };
 
 #endif // BLOCKSGRIDLAYER_H

@@ -3,6 +3,8 @@
 static const float PADDING = 10;
 static const int MINIMUM_DESTROYABLE_GROUP = 4;
 static const float ANIM_GRAVITY_DURATION = 0.2;
+static const float ANIM_SHIFT_DURATION = 0.3;
+static const float SPAWN_LAYER_TIME = 2.0;
 
 using namespace cocos2d;
 
@@ -17,7 +19,16 @@ BlocksGridLayer *BlocksGridLayer::create(float maxWidth, float maxHeight)
     return nullptr;
 }
 
+void BlocksGridLayer::onBlocksDestroyed(const std::function<void (int)> &fn)
+{
+    m_onBlocksDestroyed.push_back(fn);
+}
+
 BlocksGridLayer::BlocksGridLayer()
+    : m_isGameOver(false)
+    , m_blockSize(0)
+    , m_width(0)
+    , m_height(0)
 {
     setTouchComponentDelegate(this);
     setTouchComponentPriority(0);
@@ -27,6 +38,7 @@ void BlocksGridLayer::onEnter()
 {
     CCLayer::onEnter();
     setTouchComponentEnabled(true);
+    schedule(schedule_selector(BlocksGridLayer::spawnNextBlock), SPAWN_LAYER_TIME / m_width);
 
     /// TODO: don't fill, use spawn layer instead.
     fillRandomBlocks();
@@ -34,6 +46,7 @@ void BlocksGridLayer::onEnter()
 
 void BlocksGridLayer::onExit()
 {
+    unschedule(schedule_selector(BlocksGridLayer::spawnNextBlock));
     setTouchComponentEnabled(false);
     CCLayer::onExit();
 }
@@ -43,21 +56,27 @@ bool BlocksGridLayer::init(float maxWidth, float maxHeight)
     m_blockSize = desiredBlockSize();
     m_width = floor((maxWidth - 2 * PADDING) / m_blockSize);
     m_height = floor((maxHeight - 2 * PADDING) / m_blockSize);
+    m_isGameOver = false;
     m_blocks.resize(m_width * m_height, Block());
     m_sprites.resize(m_width * m_height, nullptr);
+    m_spawnedBlocks.resize(m_width, Block());
+    m_spawnedSprites.resize(m_width, nullptr);
 
-    m_touchArea.origin = CCPoint(PADDING, PADDING);
+    m_touchArea.origin = CCPoint(PADDING, m_blockSize + 2 * PADDING);
     m_touchArea.size = CCSize(m_width * m_blockSize, m_height * m_blockSize);
 
     CCLayerColor::initWithColor(ccc4(0, 0, 0, 255),
                                 m_width * m_blockSize + 2 * PADDING,
-                                m_height * m_blockSize + 2 * PADDING);
+                                (1 + m_height) * m_blockSize + 3 * PADDING);
 
     return true;
 }
 
 bool BlocksGridLayer::ccTouchBegan(CCTouch *touch, CCEvent *event)
 {
+    if (m_isGameOver)
+        return false;
+
     CCPoint pos = convertTouchToNodeSpace(touch);
     if (!m_touchArea.containsPoint(pos))
         return false;
@@ -83,15 +102,20 @@ void BlocksGridLayer::sendDestructionWave(int x, int y)
     std::vector<BlockIndex> indicies;
     if (!findDestroyableBlocks(indicies, BlockIndex(x, y)))
         return;
+    const int destroyedCount = int(indicies.size());
 
     for (const BlockIndex &i : indicies) {
         CCSprite *sprite = getSprite(i);
         sprite->stopAllActions();
         sprite->removeFromParent();
         setBlock(i, Block());
+        m_sprites[i.second * m_width + i.first] = nullptr;
     }
 
     applyGravity();
+
+    for (const auto &fn : m_onBlocksDestroyed)
+        fn(destroyedCount);
 }
 
 bool BlocksGridLayer::findDestroyableBlocks(std::vector<BlockIndex> &indicies, const BlockIndex &start)
@@ -128,7 +152,7 @@ bool BlocksGridLayer::findDestroyableBlocks(std::vector<BlockIndex> &indicies, c
                 far.push_back(left);
 
             BlockIndex right(i.first + 1, i.second);
-            if (right.second < m_width && !getBlock(right).isVisited() && getBlock(right) == block)
+            if (right.first < m_width && !getBlock(right).isVisited() && getBlock(right) == block)
                 far.push_back(right);
         }
         far.swap(neighbors);
@@ -160,15 +184,14 @@ void BlocksGridLayer::applyGravity()
 
 void BlocksGridLayer::fillRandomBlocks()
 {
-    for (int i = 0, n = m_width * m_height; i < n; ++i) {
+    for (int i = 0, n = m_width * (m_height / 2); i < n; ++i) {
         m_blocks[i] = Block::randomBlock();
         if (CCSprite *sprite = m_sprites[i]) {
             sprite->stopAllActions();
             sprite->removeFromParent();
             m_sprites[i] = nullptr;
         }
-        const Block &block = m_blocks[i];
-        createSprite(i % m_width, i / m_width);
+        m_sprites[i] = createSprite(i % m_width, i / m_width);
     }
 }
 
@@ -199,15 +222,73 @@ CCSprite *BlocksGridLayer::getSprite(const BlockIndex &i)
 
 CCSprite *BlocksGridLayer::createSprite(int x, int y)
 {
-    int index = y * m_width + x;
-
     CCSprite *avatar = CCSprite::create(getBlock(x, y).getImageName());
     avatar->setScaleX(m_blockSize / avatar->getContentSize().width);
     avatar->setScaleY(m_blockSize / avatar->getContentSize().height);
-    CCPoint pos = CCPoint(0.5f + x, 0.5f + y) * m_blockSize + CCPoint(PADDING, PADDING);
+    CCPoint pos = CCPoint(0.5f + x, 1.5f + y) * m_blockSize + CCPoint(PADDING, 2 * PADDING);
     avatar->setPosition(pos);
     addChild(avatar, 1);
-    m_sprites[index] = avatar;
-
     return avatar;
+}
+
+CCSprite *BlocksGridLayer::createSpawnedSprite(int x)
+{
+    CCSprite *avatar = CCSprite::create(m_spawnedBlocks[x].getImageName());
+    avatar->setScaleX(m_blockSize / avatar->getContentSize().width);
+    avatar->setScaleY(m_blockSize / avatar->getContentSize().height);
+    CCPoint pos = CCPoint(0.5f + x, 0.5f) * m_blockSize + CCPoint(PADDING, PADDING);
+    avatar->setPosition(pos);
+    addChild(avatar, 1);
+    return avatar;
+}
+
+void BlocksGridLayer::spawnNextBlock(float dt)
+{
+    if (m_isGameOver)
+        return;
+
+    for (int x = 0; x < m_width; ++x) {
+        if (m_spawnedBlocks[x].isEmpty()) {
+            m_spawnedBlocks[x] = Block::randomBlock();
+            m_spawnedSprites[x] = createSpawnedSprite(x);
+            return;
+        }
+    }
+    shiftSpawnedBlocks();
+}
+
+void BlocksGridLayer::shiftSpawnedBlocks()
+{
+    for (int x = 0; x < m_width; ++x) {
+        if (!getBlock(x, m_height - 1).isEmpty()) {
+            onGameOver();
+            return;
+        }
+    }
+
+    for (int y = m_height - 2; y >= 0; --y) {
+        for (int x = 0; x < m_width; ++x) {
+            setBlock(x, y + 1, getBlock(x, y));
+            if (CCSprite *sprite = getSprite(BlockIndex(x, y))) {
+                m_sprites[(y + 1) * m_width + x] = sprite;
+                sprite->runAction(CCMoveBy::create(ANIM_SHIFT_DURATION, CCPoint(0, m_blockSize)));
+            }
+            m_sprites[y * m_width + x] = nullptr;
+        }
+    }
+
+    for (int x = 0; x < m_width; ++x) {
+        setBlock(x, 0, m_spawnedBlocks[x]);
+        m_spawnedBlocks[x] = Block();
+        std::swap(m_sprites[x], m_spawnedSprites[x]);
+        m_sprites[x]->runAction(CCMoveBy::create(ANIM_SHIFT_DURATION, CCPoint(0, m_blockSize + PADDING)));
+    }
+}
+
+void BlocksGridLayer::onGameOver()
+{
+    CCLabelTTF *label = CCLabelTTF::create("GAME OVER", "Arial", 32);
+    label->setColor(ccRED);
+    label->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.5));
+    addChild(label, 1);
 }

@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include "BlocksGridLayer.h"
+#include "ScoreLayer.h"
 
 using namespace cocos2d;
 
@@ -32,10 +33,15 @@ bool GameScene::init()
     background->setContentSize(size);
     addChild(background, -1);
 
-    m_grid = BlocksGridLayer::create(0.96 * size.width, size.height * 0.7);
+    m_grid = BlocksGridLayer::create(0.96 * size.width, size.height * 0.8);
     m_grid->setPosition(CCPoint(0.5 * (size.width - m_grid->getContentSize().width),
-                                0.2 * size.height));
+                                0.1 * size.height));
     addChild(m_grid, 1);
+
+    m_score = ScoreLayer::create(CCSize(0.6 * size.width, 0.1 * size.height));
+    m_score->setPosition(CCPoint(0.5 * size.width, 0.95 * size.height));
+    m_grid->onBlocksDestroyed(std::bind(&ScoreLayer::addScoreForDestroyedBlocks, m_score.data(), std::placeholders::_1));
+    addChild(m_score, 1);
 
     return true;
 }
