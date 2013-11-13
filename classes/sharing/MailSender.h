@@ -20,32 +20,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCK_H
-#define BLOCK_H
+#ifndef MAILSENDER_H
+#define MAILSENDER_H
 
-#include <string>
+#include "cocos2d_game.h"
 
-class Block
+/// Prepares and shows UI for sending mail.
+class MailSender
 {
+    CC_DISABLE_COPY(MailSender)
 public:
-    static Block randomBlock();
-    Block();
-    Block(const Block &o);
-    Block &operator =(const Block &o);
+    MailSender();
 
-    bool isEmpty() const;
-    int getVariant() const;
-    const char *getImageName() const;
+    void setIsHtml(bool isHtml);
+    void setMessage(const std::string &text);
+    void setSubject(const std::string &text);
+    void setAttachment(const std::string &path);
+    void addRecipient(const std::string &address);
 
-    bool isVisited() const;
-    void setVisited(bool visited);
-
-    bool operator ==(const Block &o) const;
-    bool operator !=(const Block &o) const;
+    bool show();
 
 private:
-    int m_variant;
-    bool m_visited;
+    bool m_isHTML;
+    std::string m_message;
+    std::string m_subject;
+    std::string m_attachment;
+    std::vector<std::string> m_recipients;
 };
 
-#endif // BLOCK_H
+#endif // MAILSENDER_H

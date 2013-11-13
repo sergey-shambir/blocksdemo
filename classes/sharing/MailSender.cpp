@@ -20,32 +20,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCK_H
-#define BLOCK_H
+#include "MailSender.h"
 
-#include <string>
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#include "AJavaStaticMethod.h"
+#define android_package_name "com/omegar/BlocksDemo/"
+#endif
 
-class Block
+MailSender::MailSender()
+    : m_isHTML(false)
 {
-public:
-    static Block randomBlock();
-    Block();
-    Block(const Block &o);
-    Block &operator =(const Block &o);
+}
 
-    bool isEmpty() const;
-    int getVariant() const;
-    const char *getImageName() const;
+void MailSender::setIsHtml(bool isHtml)
+{
+    m_isHTML = isHtml;
+}
 
-    bool isVisited() const;
-    void setVisited(bool visited);
 
-    bool operator ==(const Block &o) const;
-    bool operator !=(const Block &o) const;
+void MailSender::setMessage(const std::string &text)
+{
+    m_message = text;
+}
 
-private:
-    int m_variant;
-    bool m_visited;
-};
+void MailSender::setSubject(const std::string &text)
+{
+    m_subject = text;
+}
 
-#endif // BLOCK_H
+void MailSender::setAttachment(const std::string &path)
+{
+    m_attachment = path;
+}
+
+void MailSender::addRecipient(const std::string &address)
+{
+    m_recipients.push_back(address);
+}
+
+bool MailSender::show()
+{
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+    AJavaStaticMethod method(android_package_name"BlocksDemoActivity",
+                             "sendEmail",
+                             "([Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;)Z");
+    return method.callBool(0, method.arg(m_recipients), method.arg(m_message),
+                           m_isHTML, method.arg(m_subject), method.arg(m_attachment));
+#else
+    return false;
+#endif
+}

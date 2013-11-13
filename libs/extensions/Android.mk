@@ -133,7 +133,8 @@ spine/extension.cpp \
 spine/CCSkeletonAnimation.cpp \
 spine/CCSkeleton.cpp \
 spine/spine-cocos2dx.cpp \
-OmegaR/CCTouchComponent.cpp
+OmegaR/CCTouchComponent.cpp \
+OmegaR/AJavaStaticMethod.cpp
 
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static

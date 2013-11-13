@@ -20,6 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
+#ifndef __cocos2d_omega_r__
+#define __cocos2d_omega_r__
+
 #include "cocos2d.h"
 #include "CCPointer.h"
 #include "CCTouchComponent.h"
+#include "AJavaStaticMethod.h"
+
+#endif /* defined(__cocos2d_omega_r__) */

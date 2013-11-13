@@ -20,32 +20,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCK_H
-#define BLOCK_H
+#ifndef __cocos2d_AJavaStaticMethod__
+#define __cocos2d_AJavaStaticMethod__
 
+#include "cocos2d.h"
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+
+#include <vector>
 #include <string>
+#include <jni.h>
+#include <jni/JniHelper.h>
+#include <android/log.h>
 
-class Block
+/// This class encapsulates Java static method call.
+/// Nothing bad happens if called Java method not found,
+/// it just prints debug message to log and returns default value.
+class AJavaStaticMethod
 {
 public:
-    static Block randomBlock();
-    Block();
-    Block(const Block &o);
-    Block &operator =(const Block &o);
+    explicit AJavaStaticMethod(const char *className,
+                               const char *methodName,
+                               const char *signature);
+    ~AJavaStaticMethod();
 
-    bool isEmpty() const;
-    int getVariant() const;
-    const char *getImageName() const;
+    std::vector<std::string> callStringVector(int, ...);
+    std::string callString(int, ...);
+    void callVoid(int, ...);
+    bool callBool(int, ...);
+    double callDouble(int, ...);
+    float callFloat(int, ...);
 
-    bool isVisited() const;
-    void setVisited(bool visited);
+    /// Creates future call argument from string.
+    jstring arg(const std::string &string);
 
-    bool operator ==(const Block &o) const;
-    bool operator !=(const Block &o) const;
+    /// Creates future call argument from strings list.
+    jobjectArray arg(const std::vector<std::string> &list);
 
 private:
-    int m_variant;
-    bool m_visited;
+    std::vector<jobject> m_arguments;
+    cocos2d::JniMethodInfo m_methodInfo;
+    bool m_isValid;
 };
 
-#endif // BLOCK_H
+#endif
+
+#endif /* defined(__cocos2d_AJavaStaticMethod__) */
