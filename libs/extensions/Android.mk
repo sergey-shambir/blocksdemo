@@ -133,6 +133,7 @@ spine/extension.cpp \
 spine/CCSkeletonAnimation.cpp \
 spine/CCSkeleton.cpp \
 spine/spine-cocos2dx.cpp \
+OmegaR/CCTouchComponent.cpp
 
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static
@@ -152,7 +153,8 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH) \
                            $(LOCAL_PATH)/GUI/CCScrollView \
                            $(LOCAL_PATH)/network \
                            $(LOCAL_PATH)/LocalStorage \
-						               $(LOCAL_PATH)/CocoStudio/Armature
+                           $(LOCAL_PATH)/OmegaR \
+                           $(LOCAL_PATH)/CocoStudio/Armature
 
 LOCAL_CFLAGS := -fexceptions
                     

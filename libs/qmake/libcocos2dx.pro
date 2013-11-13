@@ -63,3 +63,5 @@ for (FOLDER, COCOS2DX_FOLDERS) {
     SOURCES += $$files(../$${FOLDER}/*.cpp) $$files(../$${FOLDER}/*.c)
 }
 
+SOURCES -= ../extensions/network/WebSocket.cpp
+

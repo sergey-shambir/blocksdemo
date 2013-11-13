@@ -17,7 +17,6 @@ SOURCES += main.cpp \
     ../classes/scenes/GameScene.cpp \
     ../classes/model/Block.cpp \
     ../classes/layers/BlocksGridLayer.cpp \
-    ../classes/layers/BlocksSpawnLayer.cpp \
     ../classes/layers/ScoreLayer.cpp
 
 HEADERS += \
@@ -27,6 +26,5 @@ HEADERS += \
     ../classes/scenes/GameScene.h \
     ../classes/model/Block.h \
     ../classes/layers/BlocksGridLayer.h \
-    ../classes/layers/BlocksSpawnLayer.h \
     ../classes/layers/ScoreLayer.h
 
