@@ -33,7 +33,8 @@ bool GameScene::init()
     addChild(background, -1);
 
     m_grid = BlocksGridLayer::create(0.96 * size.width, size.height * 0.7);
-    m_grid->setPosition(CCPoint(0.02 * size.width, 0.2 * size.height));
+    m_grid->setPosition(CCPoint(0.5 * (size.width - m_grid->getContentSize().width),
+                                0.2 * size.height));
     addChild(m_grid, 1);
 
     return true;

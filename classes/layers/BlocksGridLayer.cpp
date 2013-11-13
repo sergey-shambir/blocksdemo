@@ -85,12 +85,7 @@ void BlocksGridLayer::sendDestructionWave(int x, int y)
         return;
 
     for (const BlockIndex &i : indicies) {
-        CCLOG("Index {%i, %i}", i.first, i.second);
-
         CCSprite *sprite = getSprite(i);
-        if (sprite == nullptr) {
-            CCLOG("Sprite is nullptr!");
-        }
         sprite->stopAllActions();
         sprite->removeFromParent();
         setBlock(i, Block());
@@ -111,6 +106,8 @@ bool BlocksGridLayer::findDestroyableBlocks(std::vector<BlockIndex> &indicies, c
         std::vector<BlockIndex> far;
         for (const BlockIndex &i : neighbors) {
             Block block = getBlock(i);
+
+            // TODO: don't check it when crash mode enabled.
             if (block.isVisited())
                 continue;
 
