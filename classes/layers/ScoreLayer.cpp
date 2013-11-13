@@ -16,9 +16,20 @@ ScoreLayer *ScoreLayer::create(const CCSize &size)
 
 void ScoreLayer::addScoreForDestroyedBlocks(int destroyedCount)
 {
-    const float factor = pow(2.0, 0.6 * fmin(destroyedCount, 9.0));
-    const int score = floor(destroyedCount * (3.0 + factor));
-    addScoreDirectly(score);
+    if (destroyedCount == 3) {
+        addScoreDirectly(1);
+    } else {
+        const float factor = pow(2.0, 0.6 * fmin(destroyedCount, 9.0));
+        const int score = floor(destroyedCount * (3.0 + factor));
+        addScoreDirectly(score);
+    }
+}
+
+void ScoreLayer::resetScore()
+{
+    m_score = 0;
+    CCString *text = CCString::createWithFormat("Score: %lld", m_score);
+    m_scoreLabel->setString(text->getCString());
 }
 
 ScoreLayer::ScoreLayer()

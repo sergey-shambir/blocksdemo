@@ -8,6 +8,7 @@ class ScoreLayer : public cocos2d::CCLayer
 public:
     static ScoreLayer *create(const cocos2d::CCSize &size);
     void addScoreForDestroyedBlocks(int destroyedCount);
+    void resetScore();
 
 protected:
     ScoreLayer();

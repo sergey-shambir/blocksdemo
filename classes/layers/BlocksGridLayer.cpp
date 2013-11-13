@@ -1,7 +1,7 @@
 #include "BlocksGridLayer.h"
 
 static const float PADDING = 10;
-static const int MINIMUM_DESTROYABLE_GROUP = 4;
+static const int MINIMUM_DESTROYABLE_GROUP = 3;
 static const float ANIM_GRAVITY_DURATION = 0.2;
 static const float ANIM_SHIFT_DURATION = 0.3;
 static const float SPAWN_LAYER_TIME = 2.0;
@@ -24,6 +24,11 @@ void BlocksGridLayer::onBlocksDestroyed(const std::function<void (int)> &fn)
     m_onBlocksDestroyed.push_back(fn);
 }
 
+void BlocksGridLayer::onGameStarted(const std::function<void()> &fn)
+{
+    m_onGameStarted.push_back(fn);
+}
+
 BlocksGridLayer::BlocksGridLayer()
     : m_isGameOver(false)
     , m_blockSize(0)
@@ -39,9 +44,7 @@ void BlocksGridLayer::onEnter()
     CCLayer::onEnter();
     setTouchComponentEnabled(true);
     schedule(schedule_selector(BlocksGridLayer::spawnNextBlock), SPAWN_LAYER_TIME / m_width);
-
-    /// TODO: don't fill, use spawn layer instead.
-    fillRandomBlocks();
+    restartGame();
 }
 
 void BlocksGridLayer::onExit()
@@ -75,7 +78,16 @@ bool BlocksGridLayer::init(float maxWidth, float maxHeight)
 bool BlocksGridLayer::ccTouchBegan(CCTouch *touch, CCEvent *event)
 {
     if (m_isGameOver)
+    {
+        CCPoint pos = m_labelTryAgain->convertTouchToNodeSpace(touch);
+        CCRect tapRect;
+        tapRect.size = m_labelTryAgain->getContentSize();
+        if (tapRect.containsPoint(pos)) {
+            restartGame();
+            return true;
+        }
         return false;
+    }
 
     CCPoint pos = convertTouchToNodeSpace(touch);
     if (!m_touchArea.containsPoint(pos))
@@ -182,16 +194,43 @@ void BlocksGridLayer::applyGravity()
             }
 }
 
-void BlocksGridLayer::fillRandomBlocks()
+void BlocksGridLayer::restartGame()
 {
-    for (int i = 0, n = m_width * (m_height / 2); i < n; ++i) {
-        m_blocks[i] = Block::randomBlock();
+    m_isGameOver = false;
+
+    if (m_labelGameOver) {
+        m_labelGameOver->removeFromParent();
+        m_labelGameOver = nullptr;
+    }
+    if (m_labelTryAgain) {
+        m_labelTryAgain->removeFromParent();
+        m_labelTryAgain = nullptr;
+    }
+
+    for (int i = 0, n = m_width * m_height; i < n; ++i) {
+        m_blocks[i] = Block();
         if (CCSprite *sprite = m_sprites[i]) {
             sprite->stopAllActions();
             sprite->removeFromParent();
             m_sprites[i] = nullptr;
         }
+    }
+    for (int i = 0, n = m_width * (m_height / 2); i < n; ++i) {
+        m_blocks[i] = Block::randomBlock();
         m_sprites[i] = createSprite(i % m_width, i / m_width);
+    }
+    for (int x = 0; x < m_width; ++x) {
+        if (CCSprite *sprite = m_spawnedSprites[x]) {
+            sprite->stopAllActions();
+            sprite->removeFromParent();
+            m_spawnedSprites[x] = nullptr;
+        }
+        m_spawnedBlocks[x] = Block();
+    }
+
+    for (const auto &fn : m_onGameStarted)
+    {
+        fn();
     }
 }
 
@@ -238,6 +277,7 @@ CCSprite *BlocksGridLayer::createSpawnedSprite(int x)
     avatar->setScaleY(m_blockSize / avatar->getContentSize().height);
     CCPoint pos = CCPoint(0.5f + x, 0.5f) * m_blockSize + CCPoint(PADDING, PADDING);
     avatar->setPosition(pos);
+    avatar->setOpacity(160);
     addChild(avatar, 1);
     return avatar;
 }
@@ -282,13 +322,21 @@ void BlocksGridLayer::shiftSpawnedBlocks()
         m_spawnedBlocks[x] = Block();
         std::swap(m_sprites[x], m_spawnedSprites[x]);
         m_sprites[x]->runAction(CCMoveBy::create(ANIM_SHIFT_DURATION, CCPoint(0, m_blockSize + PADDING)));
+        m_sprites[x]->runAction(CCFadeTo::create(ANIM_SHIFT_DURATION, 255));
     }
 }
 
 void BlocksGridLayer::onGameOver()
 {
-    CCLabelTTF *label = CCLabelTTF::create("GAME OVER", "Arial", 32);
-    label->setColor(ccRED);
-    label->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.5));
-    addChild(label, 1);
+    m_isGameOver = true;
+
+    m_labelGameOver = CCLabelTTF::create("GAME OVER", "Arial", 32);
+    m_labelGameOver->setColor(ccRED);
+    m_labelGameOver->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.6));
+    addChild(m_labelGameOver, 1);
+
+    m_labelTryAgain = CCLabelTTF::create("Tap here to try again...", "Arial", 32);
+    m_labelTryAgain->setColor(ccWHITE);
+    m_labelTryAgain->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.4));
+    addChild(m_labelTryAgain, 1);
 }

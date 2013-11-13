@@ -11,6 +11,7 @@ public:
     static BlocksGridLayer *create(float maxWidth, float maxHeight);
 
     void onBlocksDestroyed(const std::function<void(int amount)> &fn);
+    void onGameStarted(const std::function<void()> &fn);
 
 protected:
     typedef std::pair<int, int> BlockIndex;
@@ -26,7 +27,7 @@ protected:
     void sendDestructionWave(int x, int y);
     bool findDestroyableBlocks(std::vector<BlockIndex> &indicies, const BlockIndex &start);
     void applyGravity();
-    void fillRandomBlocks();
+    void restartGame();
 
     const Block &getBlock(int x, int y) const;
     const Block &getBlock(const BlockIndex &i) const;
@@ -43,6 +44,8 @@ protected:
 
 private:
     std::vector<std::function<void(int amount)>> m_onBlocksDestroyed;
+    std::vector<std::function<void()>> m_onGameStarted;
+
     float m_blockSize;
     int m_width;
     int m_height;
@@ -52,6 +55,8 @@ private:
     std::vector<cocos2d::CCSprite *> m_spawnedSprites;
     cocos2d::CCRect m_touchArea;
     bool m_isGameOver;
+    cocos2d::CCReference<cocos2d::CCLabelTTF> m_labelTryAgain;
+    cocos2d::CCReference<cocos2d::CCLabelTTF> m_labelGameOver;
 };
 
 #endif // BLOCKSGRIDLAYER_H

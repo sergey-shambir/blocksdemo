@@ -41,6 +41,7 @@ bool GameScene::init()
     m_score = ScoreLayer::create(CCSize(0.6 * size.width, 0.1 * size.height));
     m_score->setPosition(CCPoint(0.5 * size.width, 0.95 * size.height));
     m_grid->onBlocksDestroyed(std::bind(&ScoreLayer::addScoreForDestroyedBlocks, m_score.data(), std::placeholders::_1));
+    m_grid->onGameStarted(std::bind(&ScoreLayer::resetScore, m_score.data()));
     addChild(m_score, 1);
 
     return true;
