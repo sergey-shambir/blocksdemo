@@ -35,7 +35,7 @@ bool GameScene::init()
 
     m_grid = BlocksGridLayer::create(0.96 * size.width, size.height * 0.8);
     m_grid->setPosition(CCPoint(0.5 * (size.width - m_grid->getContentSize().width),
-                                0.1 * size.height));
+                                0.05 * size.height));
     addChild(m_grid, 1);
 
     m_score = ScoreLayer::create(CCSize(0.6 * size.width, 0.1 * size.height));
@@ -44,4 +44,26 @@ bool GameScene::init()
     addChild(m_score, 1);
 
     return true;
+}
+
+void GameScene::onEnter()
+{
+    CCLayer::onEnter();
+    setKeypadEnabled(true);
+}
+
+void GameScene::onExit()
+{
+    setKeypadEnabled(false);
+    CCLayer::onExit();
+}
+
+void GameScene::keyBackClicked(void)
+{
+    CCDirector::sharedDirector()->end();
+}
+
+void GameScene::keyMenuClicked(void)
+{
+    // TODO: show crasher menu.
 }
