@@ -3,6 +3,8 @@
 
 #include "cocos2d_game.h"
 
+class BlocksGridLayer;
+
 class GameScene : public cocos2d::CCLayer
 {
 public:
@@ -11,6 +13,8 @@ public:
 private:
     GameScene();
     bool init();
+
+    cocos2d::CCReference<BlocksGridLayer> m_grid;
 };
 
 #endif // GAMESCENE_H

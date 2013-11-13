@@ -37,13 +37,13 @@ public:
     TouchComponent();
     ~TouchComponent();
 
-    void setTouchDelegate(cocos2d::CCTouchDelegate *delegate);
-    void setTouchPriority(int priority);
-    void setSwallowTouches(bool swallow);
+    void setTouchComponentDelegate(cocos2d::CCTouchDelegate *delegate);
+    void setTouchComponentPriority(int priority);
+    void setTouchComponentSwallow(bool swallow);
 
     /// If true passed, than starts listen touches with current priority
     /// and swallow touches settings.
-    void setTouchesEnabled(bool enabled);
+    void setTouchComponentEnabled(bool enabled);
 
 private:
     CCPointer<TouchComponentPrivate> m_component;

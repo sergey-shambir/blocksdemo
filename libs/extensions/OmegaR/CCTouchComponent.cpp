@@ -103,22 +103,22 @@ TouchComponent::~TouchComponent()
     m_component->stopTouches();
 }
 
-void TouchComponent::setTouchDelegate(CCTouchDelegate *delegate)
+void TouchComponent::setTouchComponentDelegate(CCTouchDelegate *delegate)
 {
     m_component->setDelegate(delegate);
 }
 
-void TouchComponent::setTouchPriority(int priority)
+void TouchComponent::setTouchComponentPriority(int priority)
 {
     m_priority = priority;
 }
 
-void TouchComponent::setSwallowTouches(bool swallow)
+void TouchComponent::setTouchComponentSwallow(bool swallow)
 {
     m_swallowTouches = swallow;
 }
 
-void TouchComponent::setTouchesEnabled(bool enabled)
+void TouchComponent::setTouchComponentEnabled(bool enabled)
 {
     if (enabled)
         m_component->startTouches(m_priority, m_swallowTouches);
