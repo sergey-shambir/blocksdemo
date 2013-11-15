@@ -20,26 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCKSAPPLICATION_H
-#define BLOCKSAPPLICATION_H
+#include "TouchUtils.h"
 
-#include "cocos2d_game.h"
-#include "BreakpadWatcher.h"
+using namespace cocos2d;
 
-class BlocksApplication : public cocos2d::CCApplication
+bool TouchUtils::hitsNodeBoundingBox(CCNode *node, CCTouch *touch)
 {
-public:
-    BlocksApplication();
-
-    bool applicationDidFinishLaunching() CC_DECL_OVERRIDE;
-    void applicationDidEnterBackground() CC_DECL_OVERRIDE;
-    void applicationWillEnterForeground() CC_DECL_OVERRIDE;
-
-private:
-    std::vector<std::string> getSearchPaths();
-    std::string getAppDirectoryLinux();
-
-    BreakpadWatcher m_watcher;
-};
-
-#endif // BLOCKSAPPLICATION_H
+    if (!node)
+        return false;
+    CCPoint pos = node->convertTouchToNodeSpace(touch);
+    CCRect tapRect;
+    tapRect.size = node->getContentSize();
+    return tapRect.containsPoint(pos);
+}

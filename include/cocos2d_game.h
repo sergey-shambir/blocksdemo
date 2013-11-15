@@ -33,4 +33,8 @@ THE SOFTWARE.
 #define CC_DECL_OVERRIDE
 #endif
 
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+extern const char *CLASS_PLATFORM_UTILS;
+#endif
+
 #endif // COCOS2D_GAME_H

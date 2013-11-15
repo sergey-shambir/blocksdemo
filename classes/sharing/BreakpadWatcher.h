@@ -20,26 +20,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCKSAPPLICATION_H
-#define BLOCKSAPPLICATION_H
+#ifndef BREAKPADWATCHER_H
+#define BREAKPADWATCHER_H
 
 #include "cocos2d_game.h"
-#include "BreakpadWatcher.h"
+#include <memory>
 
-class BlocksApplication : public cocos2d::CCApplication
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#include "exception_handler.h"
+#include "minidump_descriptor.h"
+#endif
+
+class BreakpadWatcher
 {
+    CC_DISABLE_COPY(BreakpadWatcher)
 public:
-    BlocksApplication();
-
-    bool applicationDidFinishLaunching() CC_DECL_OVERRIDE;
-    void applicationDidEnterBackground() CC_DECL_OVERRIDE;
-    void applicationWillEnterForeground() CC_DECL_OVERRIDE;
+    BreakpadWatcher();
+    ~BreakpadWatcher();
 
 private:
-    std::vector<std::string> getSearchPaths();
-    std::string getAppDirectoryLinux();
-
-    BreakpadWatcher m_watcher;
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+    std::unique_ptr<google_breakpad::MinidumpDescriptor> m_minidumpDescriptor;
+    std::unique_ptr<google_breakpad::ExceptionHandler> m_exceptionHandler;
+#endif
 };
 
-#endif // BLOCKSAPPLICATION_H
+#endif // BREAKPADWATCHER_H

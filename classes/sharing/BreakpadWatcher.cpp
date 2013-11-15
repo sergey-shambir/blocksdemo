@@ -20,26 +20,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCKSAPPLICATION_H
-#define BLOCKSAPPLICATION_H
-
-#include "cocos2d_game.h"
 #include "BreakpadWatcher.h"
 
-class BlocksApplication : public cocos2d::CCApplication
+using namespace cocos2d;
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+
+#include <android/log.h>
+
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "BlocksDemo", __VA_ARGS__)
+
+static bool DumpCallback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded)
 {
-public:
-    BlocksApplication();
+    LOGE("%s, dump path: %s\n", succeeded ? "Succeed to write minidump" : "Failed to write minidump", descriptor.path());
+    return succeeded;
+}
 
-    bool applicationDidFinishLaunching() CC_DECL_OVERRIDE;
-    void applicationDidEnterBackground() CC_DECL_OVERRIDE;
-    void applicationWillEnterForeground() CC_DECL_OVERRIDE;
+static std::string getAndroidDumpPath()
+{
+    return CCFileUtils::sharedFileUtils()->getWritablePath();
+}
 
-private:
-    std::vector<std::string> getSearchPaths();
-    std::string getAppDirectoryLinux();
+#endif
 
-    BreakpadWatcher m_watcher;
-};
+BreakpadWatcher::BreakpadWatcher()
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+    : m_minidumpDescriptor(new google_breakpad::MinidumpDescriptor(getAndroidDumpPath()))
+    , m_exceptionHandler(new google_breakpad::ExceptionHandler(*m_minidumpDescriptor, NULL, DumpCallback, NULL, true, -1))
+#endif
+{
+}
 
-#endif // BLOCKSAPPLICATION_H
+BreakpadWatcher::~BreakpadWatcher()
+{
+}

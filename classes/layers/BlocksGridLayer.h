@@ -34,6 +34,7 @@ public:
 
     void onBlocksDestroyed(const std::function<void(int amount)> &fn);
     void onGameStarted(const std::function<void()> &fn);
+    void toggleContextMenu();
 
 protected:
     typedef std::pair<int, int> BlockIndex;
@@ -62,7 +63,9 @@ protected:
 
     void spawnNextBlock(float dt);
     void shiftSpawnedBlocks();
-    void onGameOver();
+    void showGameOver();
+    void pauseGame();
+    void unpauseGame();
 
 private:
     std::vector<std::function<void(int amount)>> m_onBlocksDestroyed;
@@ -71,14 +74,17 @@ private:
     float m_blockSize;
     int m_width;
     int m_height;
+    bool m_isGamePaused;
+    bool m_goingToCrash;
     std::vector<Block> m_blocks;
     std::vector<Block> m_spawnedBlocks;
     std::vector<cocos2d::CCSprite *> m_sprites;
     std::vector<cocos2d::CCSprite *> m_spawnedSprites;
     cocos2d::CCRect m_touchArea;
-    bool m_isGameOver;
+    cocos2d::CCReference<cocos2d::CCLayerColor> m_menuBackground;
     cocos2d::CCReference<cocos2d::CCLabelTTF> m_labelTryAgain;
     cocos2d::CCReference<cocos2d::CCLabelTTF> m_labelGameOver;
+    cocos2d::CCReference<cocos2d::CCLabelTTF> m_labelToggleCrashes;
 };
 
 #endif // BLOCKSGRIDLAYER_H

@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include "BlocksApplication.h"
 #include "LoadingScene.h"
+#include "BreakpadUploader.h"
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
 #include <unistd.h>
@@ -35,6 +36,10 @@ BlocksApplication::BlocksApplication()
 
 bool BlocksApplication::applicationDidFinishLaunching()
 {
+    BreakpadUploader uploader;
+    uploader.setMailRecipient("sergey@omega-r.com");
+    uploader.run();
+
     auto director = CCDirector::sharedDirector();
     auto glView = CCEGLView::sharedOpenGLView();
     director->setOpenGLView(glView);

@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
 #include "AJavaStaticMethod.h"
-#define android_package_name "com/omegar/BlocksDemo/"
 #endif
 
 MailSender::MailSender()
@@ -36,7 +35,6 @@ void MailSender::setIsHtml(bool isHtml)
 {
     m_isHTML = isHtml;
 }
-
 
 void MailSender::setMessage(const std::string &text)
 {
@@ -61,7 +59,7 @@ void MailSender::addRecipient(const std::string &address)
 bool MailSender::show()
 {
 #if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-    AJavaStaticMethod method(android_package_name"BlocksDemoActivity",
+    AJavaStaticMethod method(CLASS_PLATFORM_UTILS,
                              "sendEmail",
                              "([Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;)Z");
     return method.callBool(0, method.arg(m_recipients), method.arg(m_message),

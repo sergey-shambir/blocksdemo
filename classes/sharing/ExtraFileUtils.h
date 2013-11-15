@@ -20,26 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCKSAPPLICATION_H
-#define BLOCKSAPPLICATION_H
+#ifndef EXTRAFILEUTILS_H
+#define EXTRAFILEUTILS_H
 
 #include "cocos2d_game.h"
-#include "BreakpadWatcher.h"
 
-class BlocksApplication : public cocos2d::CCApplication
+class ExtraFileUtils
 {
 public:
-    BlocksApplication();
-
-    bool applicationDidFinishLaunching() CC_DECL_OVERRIDE;
-    void applicationDidEnterBackground() CC_DECL_OVERRIDE;
-    void applicationWillEnterForeground() CC_DECL_OVERRIDE;
-
-private:
-    std::vector<std::string> getSearchPaths();
-    std::string getAppDirectoryLinux();
-
-    BreakpadWatcher m_watcher;
+    /// Returns list of absolute paths to regular files, placed in directory.
+    /// @param path Only files which placed directly in this dir will be added.
+    /// @param suffix Only files with given suffix will be added.
+    static std::vector<std::string> getDirectoryContent(const std::string &path,
+                                                        const std::string &suffix);
+    static void removeFile(const std::string &path);
 };
 
-#endif // BLOCKSAPPLICATION_H
+#endif // EXTRAFILEUTILS_H

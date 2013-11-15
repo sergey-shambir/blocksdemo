@@ -88,5 +88,5 @@ void GameScene::keyBackClicked(void)
 
 void GameScene::keyMenuClicked(void)
 {
-    // TODO: show crasher menu.
+    m_grid->toggleContextMenu();
 }

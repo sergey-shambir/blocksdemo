@@ -22,12 +22,14 @@ THE SOFTWARE.
 
 #include "BlocksGridLayer.h"
 #include "MailSender.h"
+#include "TouchUtils.h"
 
 static const float PADDING = 10;
 static const int MINIMUM_DESTROYABLE_GROUP = 3;
 static const float ANIM_GRAVITY_DURATION = 0.2;
 static const float ANIM_SHIFT_DURATION = 0.3;
-static const float SPAWN_LAYER_TIME = 2.0;
+static const float SPAWN_LAYER_TIME = 2;
+static const int PAUSE_BG_ZORDER = 10;
 
 using namespace cocos2d;
 
@@ -52,11 +54,26 @@ void BlocksGridLayer::onGameStarted(const std::function<void()> &fn)
     m_onGameStarted.push_back(fn);
 }
 
+void BlocksGridLayer::toggleContextMenu()
+{
+    if (m_labelToggleCrashes) {
+        unpauseGame();
+    } else if (!m_isGamePaused) {
+        pauseGame();
+        std::string text = m_goingToCrash ? "Disable crashes" : "Enable crashes";
+        m_labelToggleCrashes = CCLabelTTF::create(text.c_str(), "Arial", 32);
+        m_labelToggleCrashes->setColor(ccWHITE);
+        m_labelToggleCrashes->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.6));
+        addChild(m_labelToggleCrashes, PAUSE_BG_ZORDER + 1);
+    }
+}
+
 BlocksGridLayer::BlocksGridLayer()
-    : m_isGameOver(false)
-    , m_blockSize(0)
+    : m_blockSize(0)
     , m_width(0)
     , m_height(0)
+    , m_isGamePaused(false)
+    , m_goingToCrash(false)
 {
     setTouchComponentDelegate(this);
     setTouchComponentPriority(0);
@@ -82,7 +99,7 @@ bool BlocksGridLayer::init(float maxWidth, float maxHeight)
     m_blockSize = desiredBlockSize();
     m_width = floor((maxWidth - 2 * PADDING) / m_blockSize);
     m_height = floor((maxHeight - 2 * PADDING) / m_blockSize);
-    m_isGameOver = false;
+    m_isGamePaused = false;
     m_blocks.resize(m_width * m_height, Block());
     m_sprites.resize(m_width * m_height, nullptr);
     m_spawnedBlocks.resize(m_width, Block());
@@ -100,21 +117,15 @@ bool BlocksGridLayer::init(float maxWidth, float maxHeight)
 
 bool BlocksGridLayer::ccTouchBegan(CCTouch *touch, CCEvent *event)
 {
-    if (m_isGameOver)
+    if (m_isGamePaused)
     {
-        CCPoint pos = m_labelTryAgain->convertTouchToNodeSpace(touch);
-        CCRect tapRect;
-        tapRect.size = m_labelTryAgain->getContentSize();
-        if (tapRect.containsPoint(pos)) {
+        if (TouchUtils::hitsNodeBoundingBox(m_labelTryAgain, touch)) {
             restartGame();
-
-            MailSender sender;
-            sender.setMessage("Hi!");
-            sender.setIsHtml(false);
-            sender.setSubject("Greetings");
-            sender.addRecipient("sergey@omega-r.com");
-            sender.show();
-
+            return true;
+        }
+        if (TouchUtils::hitsNodeBoundingBox(m_labelToggleCrashes, touch)) {
+            m_goingToCrash = !m_goingToCrash;
+            unpauseGame();
             return true;
         }
         return false;
@@ -167,14 +178,17 @@ bool BlocksGridLayer::findDestroyableBlocks(std::vector<BlockIndex> &indicies, c
     for (Block &block : m_blocks)
         block.setVisited(false);
 
+    if (m_goingToCrash && (rand() % 5 == 2)) {
+        std::string crashNow(0);
+        CCLOG("Impossible '%s'.", crashNow.c_str());
+    }
+
     std::vector<BlockIndex> neighbors;
     neighbors.push_back(start);
     while (!neighbors.empty()) {
         std::vector<BlockIndex> far;
         for (const BlockIndex &i : neighbors) {
             Block block = getBlock(i);
-
-            // TODO: don't check it when crash mode enabled.
             if (block.isVisited())
                 continue;
 
@@ -227,16 +241,7 @@ void BlocksGridLayer::applyGravity()
 
 void BlocksGridLayer::restartGame()
 {
-    m_isGameOver = false;
-
-    if (m_labelGameOver) {
-        m_labelGameOver->removeFromParent();
-        m_labelGameOver = nullptr;
-    }
-    if (m_labelTryAgain) {
-        m_labelTryAgain->removeFromParent();
-        m_labelTryAgain = nullptr;
-    }
+    unpauseGame();
 
     for (int i = 0, n = m_width * m_height; i < n; ++i) {
         m_blocks[i] = Block();
@@ -315,7 +320,7 @@ CCSprite *BlocksGridLayer::createSpawnedSprite(int x)
 
 void BlocksGridLayer::spawnNextBlock(float dt)
 {
-    if (m_isGameOver)
+    if (m_isGamePaused)
         return;
 
     for (int x = 0; x < m_width; ++x) {
@@ -332,7 +337,7 @@ void BlocksGridLayer::shiftSpawnedBlocks()
 {
     for (int x = 0; x < m_width; ++x) {
         if (!getBlock(x, m_height - 1).isEmpty()) {
-            onGameOver();
+            showGameOver();
             return;
         }
     }
@@ -357,17 +362,46 @@ void BlocksGridLayer::shiftSpawnedBlocks()
     }
 }
 
-void BlocksGridLayer::onGameOver()
+void BlocksGridLayer::showGameOver()
 {
-    m_isGameOver = true;
+    pauseGame();
 
     m_labelGameOver = CCLabelTTF::create("GAME OVER", "Arial", 32);
     m_labelGameOver->setColor(ccRED);
     m_labelGameOver->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.6));
-    addChild(m_labelGameOver, 1);
+    addChild(m_labelGameOver, 11);
 
     m_labelTryAgain = CCLabelTTF::create("Tap here to try again...", "Arial", 32);
     m_labelTryAgain->setColor(ccWHITE);
     m_labelTryAgain->setPosition(CCPoint(getContentSize().width * 0.5, getContentSize().height * 0.4));
-    addChild(m_labelTryAgain, 1);
+    addChild(m_labelTryAgain, 11);
+}
+
+void BlocksGridLayer::pauseGame()
+{
+    m_isGamePaused = true;
+
+    m_menuBackground = CCLayerColor::create(ccc4(100, 100, 100, 127), getContentSize().width, getContentSize().height);
+    addChild(m_menuBackground, PAUSE_BG_ZORDER);
+}
+
+void BlocksGridLayer::unpauseGame()
+{
+    m_isGamePaused = false;
+    if (m_labelGameOver) {
+        m_labelGameOver->removeFromParent();
+        m_labelGameOver = nullptr;
+    }
+    if (m_labelTryAgain) {
+        m_labelTryAgain->removeFromParent();
+        m_labelTryAgain = nullptr;
+    }
+    if (m_menuBackground) {
+        m_menuBackground->removeFromParent();
+        m_menuBackground = nullptr;
+    }
+    if (m_labelToggleCrashes) {
+        m_labelToggleCrashes->removeFromParent();
+        m_labelToggleCrashes = nullptr;
+    }
 }

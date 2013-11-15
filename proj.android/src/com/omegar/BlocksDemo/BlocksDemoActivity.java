@@ -26,37 +26,11 @@ package com.omegar.BlocksDemo;
 import org.cocos2dx.lib.Cocos2dxActivity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
-import android.widget.Toast;
 
 public class BlocksDemoActivity extends Cocos2dxActivity {
 	
 	static Context selfContext = null;
-
-	public static boolean sendEmail(String[] recipients, String messageText, boolean isHtml, String subject, String attachment) {
-		Intent intent = new Intent(Intent.ACTION_SEND);
-		if (isHtml) {
-			intent.setType("text/html");
-		    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(messageText));
-		} else {
-			intent.setType("text/plain");
-		    intent.putExtra(Intent.EXTRA_TEXT, messageText);
-		}
-		intent.putExtra(Intent.EXTRA_EMAIL, recipients);
-		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		if (attachment.length() > 0) {
-			intent.putExtra(Intent.EXTRA_STREAM, attachment);
-		}
-	    try {
-	    	selfContext.startActivity(Intent.createChooser(intent, "Choose an Email client :"));
-	    } catch (android.content.ActivityNotFoundException ex) {
-	        Toast.makeText(selfContext, "No any e-mail client installed", Toast.LENGTH_SHORT).show();
-	        return false;
-	    }
-        return true;
-	}
 
 	protected void onCreate(Bundle savedInstanceState) {
 		selfContext = getContext();

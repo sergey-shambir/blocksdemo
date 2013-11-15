@@ -20,26 +20,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#ifndef BLOCKSAPPLICATION_H
-#define BLOCKSAPPLICATION_H
+#ifndef BREAKPADCOMPRESSOR_H
+#define BREAKPADCOMPRESSOR_H
 
 #include "cocos2d_game.h"
-#include "BreakpadWatcher.h"
+#include "zlib.h"
 
-class BlocksApplication : public cocos2d::CCApplication
+class BreakpadUploader
 {
 public:
-    BlocksApplication();
+    enum UploadMethod {
+        Automatic, ///< detect suitable method automatically.
+        Email,
+        AmazonS3
+    };
 
-    bool applicationDidFinishLaunching() CC_DECL_OVERRIDE;
-    void applicationDidEnterBackground() CC_DECL_OVERRIDE;
-    void applicationWillEnterForeground() CC_DECL_OVERRIDE;
+    BreakpadUploader();
+
+    void setMailRecipient(const std::string &address);
+    void run();
 
 private:
-    std::vector<std::string> getSearchPaths();
-    std::string getAppDirectoryLinux();
+    bool mergeDumpAndMetaInfoToGzip(const std::string &dumpPath);
+    void addFileToOpenedGzip(const std::string &path, gzFile dest);
+    std::vector<std::string> getWritableDirContent(const std::string &suffix);
+    void upload(const std::string &gzipPath);
 
-    BreakpadWatcher m_watcher;
+    UploadMethod m_uploadMethod;
+    std::string m_mailRecipient;
 };
 
-#endif // BLOCKSAPPLICATION_H
+#endif // BREAKPADCOMPRESSOR_H
