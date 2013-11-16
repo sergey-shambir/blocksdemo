@@ -67,6 +67,7 @@ bool BreakpadUploader::mergeDumpAndMetaInfoToGzip(const std::string &dumpPath)
     if (CCApplication::sharedApplication()->getTargetPlatform() == kTargetAndroid) {
         info->setObject(ccs(SystemUtils::getApkVersion()), "Game Version");
         info->setObject(ccs(SystemUtils::getApkVersionCode()), "APK versionCode");
+        info->setObject(ccs(SystemUtils::getApkName()), "App package name");
     }
     info->setObject(ccs(SystemUtils::getSystemVersion()), "System version");
 
