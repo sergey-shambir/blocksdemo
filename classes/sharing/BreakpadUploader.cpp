@@ -61,7 +61,8 @@ void BreakpadUploader::run()
 bool BreakpadUploader::mergeDumpAndMetaInfoToGzip(const std::string &dumpPath)
 {
     const std::string infoPath = dumpPath + ".info";
-    CCDictionary *info = new CCDictionary();
+    CCPointer<CCDictionary> info = new CCDictionary();
+    info->release();
 
     if (CCApplication::sharedApplication()->getTargetPlatform() == kTargetAndroid) {
         info->setObject(ccs(SystemUtils::getApkVersion()), "Game Version");
