@@ -17,7 +17,6 @@ proj.android/*.dex
 proj.android/*.class
 
 # generated files
-proj.android/.settings/
 proj.android/bin/
 proj.android/libs/
 proj.android/gen/
@@ -25,7 +24,6 @@ proj.android/obj/
 proj.android/assets/
 libs/cocos2dx/platform/android/java/bin/
 libs/cocos2dx/platform/android/java/gen/
-libs/cocos2dx/platform/android/java/.settings/
 
 # Ignore gradle files
 proj.android/.gradle/
