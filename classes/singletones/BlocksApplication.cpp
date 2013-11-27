@@ -70,14 +70,27 @@ std::vector<std::string> BlocksApplication::getSearchPaths()
         prefix = getAppDirectoryLinux() + "../data/";
 
     const int dpi = CCDevice::getDPI();
-    std::string dpiPath = "ldpi";
-    if (dpi > 280) {
+    std::string dpiPath;
+
+    switch (getTargetPlatform()) {
+    case kTargetLinux:
+    case kTargetMacOS:
+    case kTargetWindows:
         dpiPath = "xhdpi";
-    } else if (dpi > 200) {
-        dpiPath = "hdpi";
-    } else if (dpi > 140) {
-        dpiPath = "mdpi";
+        break;
+    default:
+        if (dpi > 280) {
+            dpiPath = "xhdpi";
+        } else if (dpi > 200) {
+            dpiPath = "hdpi";
+        } else if (dpi > 140) {
+            dpiPath = "mdpi";
+        } else {
+            dpiPath = "ldpi";
+        }
+        break;
     }
+
     std::vector<std::string> result;
     result.push_back(prefix + dpiPath);
     result.push_back(prefix + "nodpi");

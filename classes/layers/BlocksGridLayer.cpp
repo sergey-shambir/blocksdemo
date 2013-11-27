@@ -30,6 +30,8 @@ static const float ANIM_GRAVITY_DURATION = 0.2;
 static const float ANIM_SHIFT_DURATION = 0.3;
 static const float SPAWN_LAYER_TIME = 2;
 static const int PAUSE_BG_ZORDER = 10;
+static const int BLOCKS_GRID_HEIGHT = 12;
+static const int BLOCKS_GRID_WIDTH = 8;
 
 using namespace cocos2d;
 
@@ -96,7 +98,7 @@ void BlocksGridLayer::onExit()
 
 bool BlocksGridLayer::init(float maxWidth, float maxHeight)
 {
-    m_blockSize = desiredBlockSize();
+    m_blockSize = desiredBlockSize(maxWidth, maxHeight);
     m_width = floor((maxWidth - 2 * PADDING) / m_blockSize);
     m_height = floor((maxHeight - 2 * PADDING) / m_blockSize);
     m_isGamePaused = false;
@@ -143,10 +145,11 @@ bool BlocksGridLayer::ccTouchBegan(CCTouch *touch, CCEvent *event)
     return true;
 }
 
-float BlocksGridLayer::desiredBlockSize()
+float BlocksGridLayer::desiredBlockSize(float maxWidth, float maxHeight)
 {
-    float factor = CCDevice::getDPI() / 160.0;
-    return 40 * factor;
+    float sizeLimitX = floor(maxWidth / BLOCKS_GRID_WIDTH);
+    float sizeLimitY = floor(maxHeight / BLOCKS_GRID_HEIGHT);
+    return fmin(sizeLimitX, sizeLimitY);
 }
 
 void BlocksGridLayer::sendDestructionWave(int x, int y)

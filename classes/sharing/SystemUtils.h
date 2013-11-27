@@ -32,6 +32,7 @@ public:
     static std::string getApkVersionCode();
     static std::string getApkVersion();
     static std::string getApkName();
+    static std::string getDeviceName();
 };
 
 #endif // SYSTEMUTILS_H

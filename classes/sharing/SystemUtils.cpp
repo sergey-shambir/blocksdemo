@@ -84,3 +84,27 @@ std::string SystemUtils::getApkName()
 #endif
     return ret;
 }
+
+std::string SystemUtils::getDeviceName()
+{
+    std::string ret;
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+    AJavaStaticMethod method(CLASS_PLATFORM_UTILS,
+                             "getDeviceName",
+                             "()Ljava/lang/String;");
+    ret = method.callString(0);
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+    // TODO: run "lsb_release -s -d", it outputs e.g. "Ubuntu 13.10".
+    ret = "Linux";
+
+    // Example: "Unity" (fallback "ubuntu").
+    char *currentDesktop = secure_getenv("XDG_CURRENT_DESKTOP");
+    if (!currentDesktop)
+        currentDesktop = secure_getenv("DESKTOP_SESSION");
+    if (currentDesktop) {
+        ret += " under ";
+        ret += currentDesktop;
+    }
+#endif
+    return ret;
+}

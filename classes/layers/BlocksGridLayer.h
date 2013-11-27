@@ -45,7 +45,7 @@ protected:
     bool init(float maxWidth, float maxHeight);
     bool ccTouchBegan(cocos2d::CCTouch *touch, cocos2d::CCEvent *event) CC_DECL_OVERRIDE;
 
-    static float desiredBlockSize();
+    static float desiredBlockSize(float maxWidth, float maxHeight);
 
     void sendDestructionWave(int x, int y);
     bool findDestroyableBlocks(std::vector<BlockIndex> &indicies, const BlockIndex &start);
