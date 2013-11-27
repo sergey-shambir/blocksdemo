@@ -15,7 +15,6 @@ proj.android/*.dex
 
 # Java class files
 proj.android/*.class
-proj.android/*.classpath
 
 # generated files
 proj.android/.settings/
